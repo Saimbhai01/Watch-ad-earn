@@ -1,0 +1,275 @@
+<!DOCTYPE html><html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch Ad & Earn</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+    header {
+      background-color: #111;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .sub-header {
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      color: #e0f7fa;
+    }
+    .balance {
+      font-size: 18px;
+      color: #fff176;
+      margin-bottom: 15px;
+    }
+    .ad-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .ad-btn-row {
+      width: 100%;
+      max-width: 360px;
+    }
+    button {
+      width: 100%;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #ad-container {
+      margin: 20px auto;
+      padding: 10px;
+      display: none;
+      background: white;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 728px;
+      color: black;
+    }
+    #withdraw-section {
+      display: none;
+      margin-top: 20px;
+    }
+    #share-section {
+      display: none;
+      background: #263238;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 10px;
+      max-width: 400px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      width: 90%;
+      max-width: 300px;
+      margin-bottom: 15px;
+    }
+    a {
+      display: inline-block;
+      margin: 6px 5px;
+      color: #fff;
+      text-decoration: none;
+      background: #009688;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    #share-msg {
+      white-space: pre-line;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    #order-status {
+      display: none;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #ffd54f;
+    }
+    @media (max-width: 480px) {
+      header { font-size: 20px; padding: 16px; }
+      button { font-size: 15px; padding: 12px; }
+    }
+  </style>
+</head>
+<body><header>📺 Watch Ad & Earn</header>
+<p class="sub-header">পাঁচটি এড দেখুন এবং আপনার ব্যালেন্স সংগ্রহ করুন</p>
+<div class="balance">বর্তমান ব্যালেন্স: <span id="balance">৳0</span></div><div class="ad-buttons">
+  <div class="ad-btn-row"><button onclick="watchAd(0)" id="btn0">Watch Ad 1</button></div>
+  <div class="ad-btn-row"><button onclick="watchAd(1)" id="btn1">Watch Ad 2</button></div>
+  <div class="ad-btn-row"><button onclick="watchAd(2)" id="btn2">Watch Ad 3</button></div>
+  <div class="ad-btn-row"><button onclick="watchAd(3)" id="btn3">Watch Ad 4</button></div>
+  <div class="ad-btn-row"><button onclick="watchAd(4)" id="btn4">Watch Ad 5</button></div>
+</div><div id="ad-container">
+  <div id="ad-script-area"></div>
+  <p>অ্যাড দেখুন... <span id="countdown">30</span> সেকেন্ড বাকি</p>
+</div><div id="withdraw-section">
+  <button id="withdrawBtn" onclick="showShare()">💸 Withdraw</button>
+</div><div id="share-section">
+  <p>আপনার উইথড্রাল অ্যাক্টিভ করতে ১০ জনকে শেয়ার করুন!</p>
+  <input type="text" id="bkash" placeholder="বিকাশ নাম্বার দিন"><br>
+  <p id="share-msg"></p>
+  <div>
+    <a href="#" target="_blank" id="wa">WhatsApp</a>
+    <a href="#" target="_blank" id="fb">Facebook</a>
+    <a href="#" target="_blank" id="tw">Twitter</a>
+    <a href="#" target="_blank" id="tg">Telegram</a>
+  </div>
+  <button onclick="placeOrder()" style="margin-top: 20px;">📥 প্লেস অর্ডার</button>
+  <div id="order-status">✅ আপনার উইথড্রাল অনুরোধটি পেন্ডিং এ রয়েছে</div>
+</div><script>
+  let watched = [false, false, false, false, false];
+  let balance = 0;
+  let shareCount = 0; // Track how many times shared
+
+  const adCodes = [
+    {
+      type: "script",
+      src: "//slippersprimeexaltation.com/ced838447705cb4855c03d4745028566/invoke.js",
+      pre: `atOptions={ 'key':'ced838447705cb4855c03d4745028566','format':'iframe','height':90,'width':728,'params':{}};`
+    },
+    {
+      type: "script",
+      src: "//slippersprimeexaltation.com/af/07/c8/af07c89af47fac7ef0736e89d114847f.js"
+    },
+    {
+      type: "div_script",
+      src: "//slippersprimeexaltation.com/a865b0d97be80d39e2eef2dc0d277a33/invoke.js",
+      divId: "container-a865b0d97be80d39e2eef2dc0d277a33"
+    },
+    {
+      type: "iframe",
+      url: "https://slippersprimeexaltation.com/nfie04pbki?key=e06dec2b0e598f1e9d3300ad78b0b323"
+    },
+    {
+      type: "iframe",
+      url: "https://slippersprimeexaltation.com/b0a062i5g?key=bdc332af370418b02aed4c6ced00c4b5"
+    }
+  ];
+
+  function watchAd(index) {
+    if (watched[index]) return;
+    document.getElementById('ad-container').style.display = 'block';
+    const adArea = document.getElementById('ad-script-area');
+    adArea.innerHTML = "";
+
+    const ad = adCodes[index];
+    if (ad.type === "script") {
+      if (ad.pre) {
+        const preScript = document.createElement('script');
+        preScript.innerHTML = ad.pre;
+        adArea.appendChild(preScript);
+      }
+      const script = document.createElement('script');
+      script.src = ad.src;
+      script.async = true;
+      adArea.appendChild(script);
+    } else if (ad.type === "div_script") {
+      const div = document.createElement('div');
+      div.id = ad.divId;
+      adArea.appendChild(div);
+      const script = document.createElement('script');
+      script.src = ad.src;
+      script.async = true;
+      adArea.appendChild(script);
+    } else if (ad.type === "iframe") {
+      const iframe = document.createElement('iframe');
+      iframe.src = ad.url;
+      iframe.width = "100%";
+      iframe.height = "250";
+      iframe.frameBorder = "0";
+      iframe.scrolling = "no";
+      adArea.appendChild(iframe);
+    }
+
+    let count = 30;
+    document.getElementById('countdown').innerText = count;
+    let interval = setInterval(() => {
+      count--;
+      document.getElementById('countdown').innerText = count;
+      if (count === 0) {
+        clearInterval(interval);
+        document.getElementById('ad-container').style.display = 'none';
+        document.getElementById(`btn${index}`).innerText = "✅ Complete";
+        watched[index] = true;
+        balance += 10;
+        document.getElementById("balance").innerText = "৳" + balance;
+        if (watched.every(w => w)) {
+          document.getElementById('withdraw-section').style.display = 'block';
+        }
+      }
+    }, 1000);
+  }
+
+  function showShare() {
+    let user = "User" + Math.floor(Math.random() * 1000);
+    let phone = "01" + Math.floor(100000000 + Math.random() * 900000000);
+    let trxid = "TRX" + Math.floor(Math.random() * 1000000);
+    let appLink = window.location.href;
+    let msg = `🎉 *${user}* ৳*${balance}* টাকা উইথড্র করেছে!\n📱 ফোন: *${phone}*\n🧾 ট্রানজেকশন আইডি: *${trxid}*\n\n🔥 *বিনামূল্যে উপার্জন করতে এখানে ক্লিক করুন:*\n👉 ${appLink}`;
+    document.getElementById("share-msg").innerText = msg;
+    document.getElementById("share-section").style.display = 'block';
+    const encodedMsg = encodeURIComponent(msg);
+    document.getElementById("wa").href = `https://wa.me/?text=${encodedMsg}`;
+    document.getElementById("fb").href = `https://www.facebook.com/sharer/sharer.php?u=${appLink}&quote=${encodedMsg}`;
+    document.getElementById("tw").href = `https://twitter.com/intent/tweet?text=${encodedMsg}`;
+    document.getElementById("tg").href = `https://t.me/share/url?url=${appLink}&text=${encodedMsg}`;
+
+    shareCount++;
+  }
+
+  function placeOrder() {
+    if (shareCount < 10) {
+      alert("⚠️ আগে ১০ জনকে শেয়ার করুন, তারপর অর্ডার প্লেস করুন।");
+      return;
+    }
+    document.getElementById("order-status").style.display = "block";
+    alert("✅ শেয়ার সফল হয়েছে! আপনার অর্ডার প্লেস করা হয়েছে।");
+  }
+</script>
+
+<script type='text/javascript' src='//slippersprimeexaltation.com/d9/f9/46/d9f946ad236b742c6a56ef9f92400e55.js'></script>
+<script type='text/javascript' src='//slippersprimeexaltation.com/af/07/c8/af07c89af47fac7ef0736e89d114847f.js'></script>
+
+</body>
+</html>
+
+<script type="text/javascript">
+	atOptions = {
+		'key' : 'e7fe9bf67cef8fc8be88ebbb23c6c5bf',
+		'format' : 'iframe',
+		'height' : 60,
+		'width' : 468,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//slippersprimeexaltation.com/e7fe9bf67cef8fc8be88ebbb23c6c5bf/invoke.js"></script>
+<script type="text/javascript">
+	atOptions = {
+		'key' : 'e7fe9bf67cef8fc8be88ebbb23c6c5bf',
+		'format' : 'iframe',
+		'height' : 60,
+		'width' : 468,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//slippersprimeexaltation.com/e7fe9bf67cef8fc8be88ebbb23c6c5bf/invoke.js"></script>
